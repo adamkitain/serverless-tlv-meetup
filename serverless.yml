@@ -1,0 +1,70 @@
+# DEPLOYMENT ARGS
+# sls deploy --region us-east-1
+
+service: serverless-tlv-meetup-demo
+frameworkVersion: ">=1.47.0"
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: ${opt:region}
+  memorySize: 1024 # optional, in MB, default is 1024
+  versionFunctions: false
+  vpc:
+    securityGroupIds:
+      - sg-07a8a72e15d952210
+    subnetIds:
+      - subnet-0379bbf29fb6d8b26
+      - subnet-09f1f430b82479296
+      - subnet-077fdd447a0aec96d
+      - subnet-0316e5892572481a0
+  environment:
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - lambda:InvokeFunction
+      Resource: "*"
+
+functions:
+  helloWorld:
+    handler: functions/hello_world.handle
+    events:
+     - alb:
+       listenerArn:
+         Ref: HttpListener
+       priority: 1
+       conditions:
+         path: /hello
+
+resources:
+  Resources:
+    FunctionsAlb:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Name: serverless-tlv-meetup-alb
+        IpAddressType: ipv4
+        Scheme: internal
+        Type: application
+        SecurityGroups:
+          - sg-07a8a72e15d952210
+        Subnets:
+          - subnet-0379bbf29fb6d8b26
+          - subnet-09f1f430b82479296
+    HttpListener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      DependsOn: FunctionsAlb
+      Properties:
+        DefaultActions:
+          - Type: fixed-response
+            Order: 1
+            FixedResponseConfig:
+              StatusCode: 404
+              ContentType: 'application/json'
+              MessageBody: '{ "errorType": "InvalidRoute" }'
+        LoadBalancerArn:
+          Ref: FunctionsAlb
+        Port: 80
+        Protocol: HTTP
+
+#plugins:
+#  - serverless-plugin-epsagon

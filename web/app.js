@@ -14,4 +14,4 @@ function repeatHttp(concurrency) {
     }, 3000)
 }
 
-// repeatHttp(2);
+ repeatHttp(2);

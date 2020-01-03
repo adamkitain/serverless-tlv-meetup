@@ -13,11 +13,7 @@ provider:
   vpc:
     securityGroupIds:
       - sg-07a8a72e15d952210
-    subnetIds:
-      - subnet-0379bbf29fb6d8b26
-      - subnet-09f1f430b82479296
-      - subnet-077fdd447a0aec96d
-      - subnet-0316e5892572481a0
+    subnetIds: ${self:custom.subnets}
   environment:
   iamRoleStatements:
     - Effect: "Allow"
@@ -47,9 +43,7 @@ resources:
         Type: application
         SecurityGroups:
           - sg-07a8a72e15d952210
-        Subnets:
-          - subnet-0379bbf29fb6d8b26
-          - subnet-09f1f430b82479296
+        Subnets: ${self:custom.subnets}
     HttpListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
       DependsOn: FunctionsAlb
@@ -65,11 +59,53 @@ resources:
           Ref: FunctionsAlb
         Port: 80
         Protocol: HTTP
+    PrivateDBSubnetGroup:
+      Type: AWS::RDS::DBSubnetGroup
+      Properties:
+        DBSubnetGroupDescription: Private DB Subnet Group
+        SubnetIds: ${self:custom.subnets}
+
+    DBClusterParameterGroup:
+      Type: AWS::RDS::DBClusterParameterGroup
+      Properties:
+        Description: "parameter group for db"
+        Family: 'aurora-mysql5.7'
+        Parameters:
+          autocommit: 0
+
+    AuroraCluster:
+      Type: AWS::RDS::DBCluster
+      Properties:
+        Engine: aurora-mysql
+        EngineVersion: 5.7.12
+        DatabaseName: sls_demo
+        MasterUsername: sls
+        MasterUserPassword: demopass
+        DBClusterParameterGroupName:
+          Ref: DBClusterParameterGroup
+        DBSubnetGroupName:
+          Ref: PrivateDBSubnetGroup
+        VpcSecurityGroupIds:
+          - sg-07a8a72e15d952210
+    AuroraInstance:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        Engine: aurora-mysql
+        CopyTagsToSnapshot: false
+        MultiAZ: false
+        StorageEncrypted: false
+        DBInstanceClass: db.t2.small
+        DBClusterIdentifier:
+          Ref: AuroraCluster
 
 plugins:
   - serverless-plugin-epsagon
 
 custom:
+  subnets:
+    - subnet-0379bbf29fb6d8b26
+    - subnet-09f1f430b82479296
+    - subnet-077fdd447a0aec96d
   epsagon:
     token: 8c55ae06-7ac8-4cb0-8302-73f5bf3dd50c
     appName: serverless-tlv-meetup-demo

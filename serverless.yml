@@ -30,11 +30,11 @@ functions:
     handler: functions/hello_world.handle
     events:
      - alb:
-       listenerArn:
-         Ref: HttpListener
-       priority: 1
-       conditions:
-         path: /hello
+        listenerArn:
+          Ref: HttpListener
+        priority: 1
+        conditions:
+          path: /hello
 
 resources:
   Resources:
@@ -66,5 +66,10 @@ resources:
         Port: 80
         Protocol: HTTP
 
-#plugins:
-#  - serverless-plugin-epsagon
+plugins:
+  - serverless-plugin-epsagon
+
+custom:
+  epsagon:
+    token: 8c55ae06-7ac8-4cb0-8302-73f5bf3dd50c
+    appName: serverless-tlv-meetup-demo

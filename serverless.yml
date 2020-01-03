@@ -6,7 +6,7 @@ frameworkVersion: ">=1.47.0"
 
 provider:
   name: aws
-  runtime: python3.7
+  runtime: python2.7
   region: ${opt:region}
   memorySize: 1024 # optional, in MB, default is 1024
   versionFunctions: false
@@ -15,6 +15,10 @@ provider:
       - sg-07a8a72e15d952210
     subnetIds: ${self:custom.subnets}
   environment:
+    DB_HOST:
+      Fn::GetAtt: [AuroraCluster, ReadEndpoint.Address]
+    DB_USER: "sls"
+    DB_PASS: "demopass"
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -31,6 +35,15 @@ functions:
         priority: 1
         conditions:
           path: /hello
+  getRandomUser:
+    handler: functions/get_random_user.handle
+    events:
+     - alb:
+        listenerArn:
+          Ref: HttpListener
+        priority: 1
+        conditions:
+          path: /user/random
 
 resources:
   Resources:
@@ -100,6 +113,8 @@ resources:
 
 plugins:
   - serverless-plugin-epsagon
+  - serverless-python-requirements
+
 
 custom:
   subnets:

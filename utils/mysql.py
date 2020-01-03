@@ -1,5 +1,6 @@
 import MySQLdb
 import logging
+import os
 logger = logging.getLogger()
 
 class DatabaseClient(object):
@@ -76,3 +77,9 @@ class MysqlClient(DatabaseClient):
     def _GetCursor(self):
         return self.connection.cursor()
 
+
+def GetMySQLClient():
+    db_user = os.getenv('DB_USER', '')
+    db_host = os.getenv('DB_HOST', '')
+    db_pass = os.getenv('DB_PASS', '')
+    return MysqlClient(db_host, 'sls_demo', db_user, db_pass)

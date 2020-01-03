@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "serverless-plugin-epsagon": "*"
+    "serverless-plugin-epsagon": "*",
+    "serverless-python-requirements": "*"
   }
 }

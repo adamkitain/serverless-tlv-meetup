@@ -6,7 +6,7 @@ frameworkVersion: ">=1.47.0"
 
 provider:
   name: aws
-  runtime: python2.7
+  runtime: python3.7
   region: ${opt:region}
   memorySize: 1024 # optional, in MB, default is 1024
   versionFunctions: false
@@ -32,7 +32,7 @@ functions:
      - alb:
         listenerArn:
           Ref: HttpListener
-        priority: 1
+        priority: 5
         conditions:
           path: /hello
   getRandomUser:
@@ -41,7 +41,7 @@ functions:
      - alb:
         listenerArn:
           Ref: HttpListener
-        priority: 1
+        priority: 4
         conditions:
           path: /user/random
 

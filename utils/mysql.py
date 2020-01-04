@@ -1,4 +1,4 @@
-import MySQLdb
+import pymysql
 import logging
 import os
 logger = logging.getLogger()
@@ -39,7 +39,7 @@ class DatabaseClient(object):
             if len(results) == 0:
                 return []
             return self._FormatResults(results, colnames)
-        except Exception, e:
+        except Exception as e:
             self.connection.rollback()
             logger.info("There was an error on the query: {}".format(query))
             logger.error(e.message)
@@ -68,7 +68,7 @@ class MysqlClient(DatabaseClient):
         super(MysqlClient, self).__init__(db_host, db_name, db_user, db_pass, db_port)
 
     def GetConnection(self, db_host, db_name, db_user, db_pass, db_port):
-        return MySQLdb.connect(host=db_host,
+        return pymysql.connect(host=db_host,
                                port=db_port,
                                db=db_name,
                                user=db_user,

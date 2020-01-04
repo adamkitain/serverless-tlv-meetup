@@ -5,13 +5,15 @@ function repeatHttp(concurrency) {
         for(i=0; i<concurrency; i++){
             count += 1;
             $.ajax({
-                url: "/test",
+                url: "http://internal-serverless-tlv-meetup-alb-1142198503.us-east-1.elb.amazonaws.com/user/random",
                 method: 'GET',
-                success: function(data) {console.log(data);}
+                cors: true
+            }, function(data) {
+                console.log(data);
             });
             console.log("Count is: ", count);
         };
     }, 3000)
 }
 
- repeatHttp(2);
+ repeatHttp(5);

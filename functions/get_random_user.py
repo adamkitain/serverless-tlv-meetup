@@ -1,12 +1,12 @@
+from utils.sls_logger import get_logger
 from utils.mysql import GetMySQLClient
 from random import randint
-import logging
 import json
 
-db_client = GetMySQLClient()
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
+logger = get_logger()
+logger.info("----- COLD START ------")
+db_client = GetMySQLClient()
 
 def _get_random_user_id():
     user_ids = db_client.Query("select id from USERS limit 1000")

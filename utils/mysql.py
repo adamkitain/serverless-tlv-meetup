@@ -1,7 +1,10 @@
+from utils.secrets import get_secret
+from utils.sls_logger import get_logger
 import pymysql
-import logging
 import os
-logger = logging.getLogger()
+
+
+logger = get_logger()
 
 class DatabaseClient(object):
 
@@ -33,6 +36,7 @@ class DatabaseClient(object):
         Returns None on error
         """
         try:
+            logger.info("Querying the database: {}".format(query))
             self.cursor.execute(query)
             results = self.cursor.fetchall()
             colnames = [desc[0].lower() for desc in self.cursor.description] if as_dict else None
@@ -65,7 +69,9 @@ class MysqlClient(DatabaseClient):
         """
         Create a MySQLClient Object and connect to the DB
         """
+        logger.info("Attempting to connect to database {host} using user: {user}".format(host=db_host, user=db_user))
         super(MysqlClient, self).__init__(db_host, db_name, db_user, db_pass, db_port)
+        logger.info("Connection made successfully")
 
     def GetConnection(self, db_host, db_name, db_user, db_pass, db_port):
         return pymysql.connect(host=db_host,
@@ -79,7 +85,5 @@ class MysqlClient(DatabaseClient):
 
 
 def GetMySQLClient():
-    db_user = os.getenv('DB_USER', '')
-    db_host = os.getenv('DB_HOST', '')
-    db_pass = os.getenv('DB_PASS', '')
-    return MysqlClient(db_host, 'sls_demo', db_user, db_pass)
+    secret = get_secret(os.getenv('MYSQL_SECRET_KEY'))
+    return MysqlClient(secret['host'], secret['dbname'], secret['username'], secret['password'])

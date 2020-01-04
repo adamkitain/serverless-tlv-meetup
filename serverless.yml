@@ -15,15 +15,20 @@ provider:
       - sg-07a8a72e15d952210
     subnetIds: ${self:custom.subnets}
   environment:
-    DB_HOST:
-      Fn::GetAtt: [AuroraCluster, ReadEndpoint.Address]
-    DB_USER: "sls"
-    DB_PASS: "demopass"
+    MYSQL_SECRET_KEY: serverless-tlv-meetup-demo-write-pass
   iamRoleStatements:
     - Effect: "Allow"
       Action:
         - lambda:InvokeFunction
       Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: "arn:aws:secretsmanager:us-east-1:858732462826:secret:serverless-tlv-meetup-demo-write-pass-??????"
+    - Effect: "Allow"
+      Action:
+        - kms:Decrypt
+      Resource: "arn:aws:kms:us-east-1:858732462826:key/524cbbad-4673-4f22-b16a-450c1cf13e7e"
 
 functions:
   helloWorld:

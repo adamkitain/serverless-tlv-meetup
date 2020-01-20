@@ -1,39 +1,13 @@
+from utils.sls_response import format_success_response
+from utils.user import get_user_data, get_random_user_id
 from utils.sls_logger import get_logger
 from utils.mysql import GetMySQLClient
-from random import randint
-import json
-
 
 logger = get_logger()
 logger.info("----- COLD START ------")
 db_client = GetMySQLClient()
 
-def _get_random_user_id():
-    user_ids = db_client.Query("select id from USERS limit 1000")
-    user_id = user_ids[randint(0,999)]['id']
-    logger.info("Found user: {}".format(user_id))
-    return user_id
-
-
-def _get_user_data(user_id):
-    user_query = "select u.*, s.* from USERS u join SESSIONS s on u.id = s.user_id where u.id = '{}'".format(user_id)
-    user_sessions = db_client.Query(user_query)
-    logger.info("Found {} sessions".format(len(user_sessions)))
-    return user_sessions
-
-
-def _format_response(res_body):
-    response = {
-        "statusCode": 200,
-        "body": json.dumps(res_body),
-        "headers": {
-            "Content-Type": "application/json"
-        }
-    }
-    logger.info("Response: {}".format(response))
-    return response
-
 def handle(event, context):
-    user_id = _get_random_user_id()
-    user_data = _get_user_data(user_id)
-    return _format_response(user_data)
+    user_id = get_random_user_id(db_client)
+    user_data = get_user_data(db_client, user_id)
+    return format_success_response(user_data)

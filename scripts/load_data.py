@@ -1,4 +1,6 @@
-from utils.mysql import MysqlClient
+import os
+
+from utils.mysql import MysqlClient, GetMySQLClient
 import uuid
 import names
 import random
@@ -14,6 +16,7 @@ def _parse_options():
     parser.add_option('--db_host')
     parser.add_option('--db_user')
     parser.add_option('--db_pass')
+    parser.add_option('--ssm_key')
     options, args = parser.parse_args()
     return options
 
@@ -71,11 +74,15 @@ def _load_fake_data(db_client, total_rows=1000, batch_size=1000):
     _insert_fake_sessions_data_to_db(db_client)
 
 
-def create_tables_load_data(db_host, db_user, db_pass):
-    db_client = MysqlClient(db_host, 'sls_demo', db_user, db_pass)
+def create_tables_load_data(options):
+    if options.ssm_key is not None:
+        os.environ['MYSQL_SECRET_KEY'] = options.ssm_key
+        db_client = GetMySQLClient()
+    else:
+        db_client = MysqlClient(options.db_host, 'sls_demo', options.db_user, options.db_pass)
     _create_table(db_client)
     _load_fake_data(db_client, total_rows=USERS_SIZE, batch_size=1000)
 
 if __name__ == '__main__':
     options = _parse_options()
-    create_tables_load_data(options.db_host, options.db_user, options.db_pass)
+    create_tables_load_data(options)

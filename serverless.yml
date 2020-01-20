@@ -15,7 +15,7 @@ provider:
       - sg-07a8a72e15d952210
     subnetIds: ${self:custom.subnets}
   environment:
-    MYSQL_SECRET_KEY: serverless-tlv-meetup-demo-write-pass
+    MYSQL_SECRET_KEY: !Ref ServerlessMeetupAuroraPass
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -24,7 +24,7 @@ provider:
     - Effect: "Allow"
       Action:
         - secretsmanager:GetSecretValue
-      Resource: "arn:aws:secretsmanager:us-east-1:858732462826:secret:serverless-tlv-meetup-demo-write-pass-??????"
+      Resource: !Ref ServerlessMeetupAuroraPass
     - Effect: "Allow"
       Action:
         - kms:Decrypt
@@ -49,6 +49,16 @@ functions:
         priority: 4
         conditions:
           path: /user/random
+  getRandomUserIdSlowly:
+    handler: functions/get_random_user_id_slowly.handle
+    timeout: 30
+    events:
+     - alb:
+        listenerArn:
+          Ref: HttpListener
+        priority: 6
+        conditions:
+          path: /user/random/id
 
 resources:
   Resources:
@@ -91,14 +101,42 @@ resources:
         Parameters:
           autocommit: 0
 
+    ServerlessMeetupAuroraPass:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Description: 'This is the secret for my Aurora Cluster'
+        GenerateSecretString:
+          SecretStringTemplate: '{"username": "sls", "dbname": "sls_demo"}'
+          GenerateStringKey: 'password'
+          PasswordLength: 32
+          ExcludeCharacters: '"@/\'
+
+    SecretRDSInstanceAttachment:
+      Type: AWS::SecretsManager::SecretTargetAttachment
+      DependsOn: AuroraInstance
+      Properties:
+        SecretId: !Ref ServerlessMeetupAuroraPass
+        TargetId: !Ref AuroraCluster
+        TargetType: AWS::RDS::DBCluster
+
+    MySecretRotationSchedule:
+      Type: AWS::SecretsManager::RotationSchedule
+      DependsOn: SecretRDSInstanceAttachment
+      Properties:
+        SecretId: !Ref ServerlessMeetupAuroraPass
+        # Remember to update this place holder with the ARN of your rotation lambda
+        RotationLambdaARN: arn:aws:lambda:us-east-1:858732462826:function:SecretsManagermysql-rotation-lambda
+        RotationRules:
+          AutomaticallyAfterDays: 30
+
     AuroraCluster:
       Type: AWS::RDS::DBCluster
       Properties:
         Engine: aurora-mysql
         EngineVersion: 5.7.12
-        DatabaseName: sls_demo
-        MasterUsername: sls
-        MasterUserPassword: demopass
+        DatabaseName: !Join ['', ['{{resolve:secretsmanager:', !Ref ServerlessMeetupAuroraPass, ':SecretString:dbname}}' ]]
+        MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref ServerlessMeetupAuroraPass, ':SecretString:username}}' ]]
+        MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref ServerlessMeetupAuroraPass, ':SecretString:password}}' ]]
         DBClusterParameterGroupName:
           Ref: DBClusterParameterGroup
         DBSubnetGroupName:

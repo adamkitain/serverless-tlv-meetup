@@ -11,8 +11,7 @@ provider:
   memorySize: 1024 # optional, in MB, default is 1024
   versionFunctions: false
   vpc:
-    securityGroupIds:
-      - sg-07a8a72e15d952210
+    securityGroupIds: ${file(config/env.yml):security_group_ids}
     subnetIds: ${self:custom.subnets}
   environment:
     MYSQL_SECRET_KEY: !Ref ServerlessMeetupAuroraPass
@@ -69,8 +68,7 @@ resources:
         IpAddressType: ipv4
         Scheme: internal
         Type: application
-        SecurityGroups:
-          - sg-07a8a72e15d952210
+        SecurityGroups: ${file(config/env.yml):security_group_ids}
         Subnets: ${self:custom.subnets}
     HttpListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
@@ -141,8 +139,8 @@ resources:
           Ref: DBClusterParameterGroup
         DBSubnetGroupName:
           Ref: PrivateDBSubnetGroup
-        VpcSecurityGroupIds:
-          - sg-07a8a72e15d952210
+        VpcSecurityGroupIds: ${file(config/env.yml):security_group_ids}
+
     AuroraInstance:
       Type: AWS::RDS::DBInstance
       Properties:
@@ -160,10 +158,7 @@ plugins:
 
 
 custom:
-  subnets:
-    - subnet-0379bbf29fb6d8b26
-    - subnet-09f1f430b82479296
-    - subnet-077fdd447a0aec96d
+  subnets: ${file(config/env.yml):subnet_ids}
   epsagon:
-    token: 8c55ae06-7ac8-4cb0-8302-73f5bf3dd50c
+    token: ${file(config/env.yml):epsagon_token}
     appName: serverless-tlv-meetup-demo

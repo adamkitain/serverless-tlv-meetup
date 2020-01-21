@@ -1,0 +1,7 @@
+subnet_ids:
+  - subnet-xxxxxyyyyyzzzzzzz
+  - subnet-aaaaabbbbbbcccccc
+  - subnet-pppppqqqqqqqrrrrr
+security_group_ids:
+  - sg-xxxyzyyyyzyzyzyz
+epsagon_token: XXXXX-XXXXX-XXXXXX-XXXX

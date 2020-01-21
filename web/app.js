@@ -5,7 +5,7 @@ function repeatHttp(concurrency) {
         for(i=0; i<concurrency; i++){
             count += 1;
             $.ajax({
-                url: "http://internal-serverless-tlv-meetup-alb-393170614.us-east-1.elb.amazonaws.com/user/random",
+                url: "http://internal-serverless-tlv-meetup-alb-393170614.us-east-1.elb.amazonaws.com/user/random/id",
                 method: 'GET',
                 cors: true
             }, function(data) {

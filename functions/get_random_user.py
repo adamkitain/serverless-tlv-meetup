@@ -11,3 +11,5 @@ def handle(event, context):
     user_id = get_random_user_id(db_client)
     user_data = get_user_data(db_client, user_id)
     return format_success_response(user_data)
+
+

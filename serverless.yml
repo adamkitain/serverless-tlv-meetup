@@ -23,7 +23,7 @@ provider:
       Resource: "*"
     - Effect: "Allow"
       Action:
-        - secretsmanager:GetSecretValue
+        - secretsmanager:*
       Resource: !Ref ServerlessMeetupAuroraPass
     - Effect: "Allow"
       Action:

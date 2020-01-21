@@ -86,4 +86,5 @@ class MysqlClient(DatabaseClient):
 
 def GetMySQLClient():
     secret = get_secret(os.getenv('MYSQL_SECRET_KEY'))
-    return MysqlClient(secret['host'], secret['dbname'], secret['username'], secret['password'])
+    host = os.getenv('DBHOST', None) or secret['host']
+    return MysqlClient(host, secret['dbname'], secret['username'], secret['password'])

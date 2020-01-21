@@ -9,6 +9,7 @@ This talk covers best practices, tips, and tricks for getting your Lambdas to pl
 * AWS Secrets Manager
 * Connecting to the Database
 * Preventing Choking the DB 
+* AWS Database Proxy
 * Monitoring (CloudWatch + Epsagon)
 
 ### Running the code
